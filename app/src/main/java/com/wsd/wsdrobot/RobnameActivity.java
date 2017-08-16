@@ -10,11 +10,15 @@ import im.delight.android.ddp.MeteorCallback;
 import im.delight.android.ddp.db.memory.InMemoryDatabase;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import com.baidu.speech.VoiceRecognitionService;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -23,10 +27,12 @@ import java.util.Arrays;
 
 public class RobnameActivity extends AppCompatActivity implements MeteorCallback, RecognitionListener {
 
+    private static final String TAG = "pdh";
     private Meteor mMeteor;
     private int myRecognitonStatus = enumRecognitionResult.STATUS_None.value; //语音识别结果
     private SpeechRecognizer speechRecognizer;
 
+    private EditText editText;
 
 
     @Override
@@ -65,6 +71,8 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
                 startVoiceRecognizer();
             }
         });
+
+        editText = (EditText) findViewById(R.id.resText);
     }
 
 
@@ -134,6 +142,8 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
     @Override
     public void onRmsChanged(float rmsdB) {
         System.out.println("onRmsChanged " + rmsdB);
+        Log.d(TAG, "音量: " + rmsdB);
+        mMeteor.call("listenVolume.updateVolume", new Object[] {"vol", rmsdB});
     }
 
     @Override
@@ -203,6 +213,23 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
             System.out.println("origin_result=[warning: bad json]\n" + json_res);
         }
 
+
+
+        try {
+            JSONObject jsonObj = new JSONObject(results.getString("origin_result"));
+            String corpus_no = jsonObj.getJSONObject("result").getString("corpus_no");
+            String err_no = jsonObj.getJSONObject("result").getString("err_no");
+            String idx = jsonObj.getJSONObject("result").getString("idx");
+            Integer res_type = Integer.valueOf(jsonObj.getJSONObject("result").getString("res_type"));
+            String sn = jsonObj.getJSONObject("result").getString("sn");
+            //ddp 调用后台方法
+            //'listenStatus.updateSpeakStatus'(msgid, status, sayMessage, errorMsg)
+            mMeteor.call("listenStatus.updateSpeakStatus", new Object[] {corpus_no, res_type, nbest.get(0), err_no});
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        editText.setText(nbest.get(0));
     }
 
     @Override
