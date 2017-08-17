@@ -214,7 +214,10 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         }
 
 
-
+        /**
+         * 解析结果
+         * pdh
+         */
         try {
             JSONObject jsonObj = new JSONObject(results.getString("origin_result"));
             String corpus_no = jsonObj.getJSONObject("result").getString("corpus_no");
