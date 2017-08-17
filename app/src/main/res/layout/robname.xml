@@ -24,6 +24,12 @@
             android:layout_height="wrap_content"
             android:id="@+id/resText"
             android:hint="识别结果"/>
+        <WebView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/webView">
+
+        </WebView>
 
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

@@ -5,5 +5,5 @@ package com.wsd.wsdrobot;
  */
 
 public class config {
-    public final static String meteorSocketUrl = "ws://192.168.0.165:3000/websocket";
+    public final static String meteorSocketUrl = "ws://192.168.0.157:3000/websocket";
 }

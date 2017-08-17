@@ -12,6 +12,9 @@ import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -33,6 +36,7 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
     private SpeechRecognizer speechRecognizer;
 
     private EditText editText;
+    private WebView webView;
 
 
     @Override
@@ -73,6 +77,22 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         });
 
         editText = (EditText) findViewById(R.id.resText);
+
+        webView = (WebView) findViewById(R.id.webView);
+        //WebView加载web资源
+        webView.loadUrl("http://192.168.0.157:3000/voiceListen");
+//        //覆盖WebView默认使用第三方或系统默认浏览器打开网页的行为，使网页用WebView打开
+//        webView.setWebViewClient(new WebViewClient(){
+//            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                // TODO Auto-generated method stub
+//                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+//                view.loadUrl(url);
+//                return true;
+//            }
+//        });
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
     }
 
 
@@ -214,7 +234,10 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         }
 
 
-
+        /**
+         * 解析结果
+         * pdh
+         */
         try {
             JSONObject jsonObj = new JSONObject(results.getString("origin_result"));
             String corpus_no = jsonObj.getJSONObject("result").getString("corpus_no");
