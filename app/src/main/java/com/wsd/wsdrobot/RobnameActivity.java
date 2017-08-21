@@ -35,6 +35,7 @@ import java.util.Arrays;
 
 import im.delight.android.ddp.Meteor;
 import im.delight.android.ddp.MeteorCallback;
+import im.delight.android.ddp.db.Collection;
 import im.delight.android.ddp.db.memory.InMemoryDatabase;
 
 
@@ -128,6 +129,8 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
             //开始说话
             case R.id.speak:
                 speak();
+                Collection c = mMeteor.getDatabase().getCollection("listenStatus");
+                Log.d(TAG, "listenStatus集合: " + c);
                 break;
         }
     }
@@ -139,14 +142,18 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         super.onDestroy();
     }
 
-
+    /**
+     * Mereor
+     */
     @Override
     public void onConnect(boolean signedInAutomatically) {
-        System.out.println("Connected");
-        System.out.println("Is logged in :" + mMeteor.isLoggedIn());
-        System.out.println("User ID: " + mMeteor.getUserId());
+        Log.d(TAG, "onConnect: Connected");
+        Log.d(TAG, "Is logged in :" + mMeteor.isLoggedIn());
+        Log.d(TAG, "User ID: " + mMeteor.getUserId());
 
-        String sub_listenStatus_id = mMeteor.subscribe("listenStatus");
+        String sub_listenStatus_id = mMeteor.subscribe("listenStatus", new Object[]{1});
+        String sub_listenVolumes_id = mMeteor.subscribe("listenVolumes", new Object[]{1});
+        Log.d(TAG, "sub: " + sub_listenStatus_id);
     }
 
     @Override
@@ -164,34 +171,36 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
 
     @Override
     public void onDataAdded(String collectionName, String documentID, String newValuesJson) {
-        System.out.println("Data added to <" + collectionName + "> in document <" + documentID + ">");
-        System.out.println("    Added: " + newValuesJson);
+        Log.d(TAG, "Data added to <" + collectionName + "> in document <" + documentID + ">");
+        Log.d(TAG, "    Added: " + newValuesJson);
     }
 
     @Override
     public void onDataChanged(String collectionName, String documentID, String updatedValuesJson, String removedValuesJson) {
-        System.out.println("Data changed in <" + collectionName + "> in document <" + documentID + ">");
-        System.out.println("    Updated: " + updatedValuesJson);
-        System.out.println("    Removed: " + removedValuesJson);
+        Log.d(TAG, "Data changed in <" + collectionName + "> in document <" + documentID + ">");
+        Log.d(TAG, "    Updated: " + updatedValuesJson);
+        Log.d(TAG, "    Removed: " + removedValuesJson);
     }
 
-
-    //语音识别相关
     @Override
     public void onDataRemoved(String collectionName, String documentID) {
-        System.out.println("Data removed from <" + collectionName + "> in document <" + documentID + ">");
+        Log.d(TAG, "Data removed from <" + collectionName + "> in document <" + documentID + ">");
     }
 
+
+    /**
+     * 百度语音识别
+     */
     @Override
     public void onReadyForSpeech(Bundle params) {
         myRecognitonStatus = enumRecognitionResult.STATUS_Ready.value;
-        System.out.println("准备就绪，可以开始说话");
+        Log.d(TAG, "onReadyForSpeech: 准备就绪，可以开始说话");
     }
 
     @Override
     public void onBeginningOfSpeech() {
         myRecognitonStatus = enumRecognitionResult.STATUS_Speaking.value;
-        System.out.println("检测到用户已经开始说话");
+        Log.d(TAG, "onBeginningOfSpeech: 检测到用户已经开始说话");
     }
 
     @Override
@@ -288,6 +297,7 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         }
 
         editText.setText(nbest.get(0));
+        speak();
     }
 
     @Override
@@ -397,6 +407,8 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
                 "bIe96UAAi8MT6BfqQPljYPpTWZzcVWOL"/*这里只是为了让Demo正常运行使用APIKey,请替换成自己的APIKey*/);
         // 发音人（在线引擎），可用参数为0,1,2,3。。。（服务器端会动态增加，各值含义参考文档，以文档说明为准。0--普通女声，1--普通男声，2--特别男声，3--情感男声。。。）
         this.speechSynthesizer.setParam(SpeechSynthesizer.PARAM_SPEAKER, "3");
+        // 音量0-9
+        this.speechSynthesizer.setParam(SpeechSynthesizer.PARAM_VOLUME, "7");
         // 设置Mix模式的合成策略
         this.speechSynthesizer.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);
         // 授权检测接口(只是通过AuthInfo进行检验授权是否成功。)
