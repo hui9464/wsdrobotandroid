@@ -13,17 +13,18 @@
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
 
-    <Button
-        android:id="@+id/StartListenBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="开始收听" />
+    <!--<Button-->
+        <!--android:id="@+id/StartListenBtn"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="开始收听" />-->
 
-    <Button
-        android:id="@+id/speak"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="开始说话" />
+    <!--<Button-->
+        <!--android:id="@+id/speak"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="开始说话" />-->
+
     </LinearLayout>
 
     <LinearLayout
@@ -33,11 +34,11 @@
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/resText"
-            android:hint="识别结果"/>
+        <!--<EditText-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/resText"-->
+            <!--android:hint="识别结果"/>-->
 
         <WebView
             android:layout_width="match_parent"

@@ -1,15 +1,17 @@
 package com.wsd.wsdrobot;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.EditText;
@@ -35,14 +37,15 @@ import java.util.Arrays;
 
 import im.delight.android.ddp.Meteor;
 import im.delight.android.ddp.MeteorCallback;
-import im.delight.android.ddp.db.Collection;
 import im.delight.android.ddp.db.memory.InMemoryDatabase;
 
 
-public class RobnameActivity extends AppCompatActivity implements MeteorCallback, RecognitionListener, View.OnClickListener, SpeechSynthesizerListener {
+public class RobnameActivity extends Activity implements MeteorCallback, RecognitionListener, SpeechSynthesizerListener {
 
     private static final String TAG = "pdh";
+    private static final String MTAG = "meteor";
     private Meteor mMeteor;
+
     private int myRecognitonStatus = enumRecognitionResult.STATUS_None.value; //语音识别结果
     // 语音识别
     private SpeechRecognizer speechRecognizer;
@@ -69,12 +72,14 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.robname);
         initMeteor();
         initSpeechRecognizer();
         initWidgetListen();
         initialEnv();
         initialTts();
+        startVoiceRecognizer();
     }
 
     private void initMeteor() {
@@ -90,17 +95,17 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
     }
 
     private void startVoiceRecognizer() {
-        speechRecognizer.cancel();
+        //speechRecognizer.cancel();
         Intent intent = new Intent();
         speechRecognizer.startListening(intent);
     }
 
     private void initWidgetListen() {
 
-        editText = (EditText) findViewById(R.id.resText);
-
-        findViewById(R.id.StartListenBtn).setOnClickListener(this);
-        findViewById(R.id.speak).setOnClickListener(this);
+//        editText = (EditText) findViewById(R.id.resText);
+//
+//        findViewById(R.id.StartListenBtn).setOnClickListener(this);
+//        findViewById(R.id.speak).setOnClickListener(this);
 
         webView = (WebView) findViewById(R.id.webView);
         //WebView加载web资源
@@ -119,21 +124,21 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         settings.setJavaScriptEnabled(true);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            //开始收听
-            case R.id.StartListenBtn:
-                startVoiceRecognizer();
-                break;
-            //开始说话
-            case R.id.speak:
-                speak();
-                Collection c = mMeteor.getDatabase().getCollection("listenStatus");
-                Log.d(TAG, "listenStatus集合: " + c);
-                break;
-        }
-    }
+//    @Override
+//    public void onClick(View v) {
+//        switch (v.getId()) {
+//            //开始收听
+//            case R.id.StartListenBtn:
+//                startVoiceRecognizer();
+//                break;
+//            //开始说话
+//            case R.id.speak:
+//                speak("");
+////                Collection c = mMeteor.getDatabase().getCollection("listenStatus");
+////                Log.d(TAG, "listenStatus集合: " + c);
+//                break;
+//        }
+//    }
 
     @Override
     protected void onDestroy() {
@@ -147,23 +152,26 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
      */
     @Override
     public void onConnect(boolean signedInAutomatically) {
-        Log.d(TAG, "onConnect: Connected");
-        Log.d(TAG, "Is logged in :" + mMeteor.isLoggedIn());
-        Log.d(TAG, "User ID: " + mMeteor.getUserId());
+        Log.d(MTAG, "onConnect: Connected");
+        Log.d(MTAG, "Is logged in :" + mMeteor.isLoggedIn());
+        Log.d(MTAG, "User ID: " + mMeteor.getUserId());
 
         String sub_listenStatus_id = mMeteor.subscribe("listenStatus", new Object[]{1});
         String sub_listenVolumes_id = mMeteor.subscribe("listenVolumes", new Object[]{1});
-        Log.d(TAG, "sub: " + sub_listenStatus_id);
+        String sub_btnStatus_id = mMeteor.subscribe("btnStatus", new Object[]{1});
+        Log.d(MTAG, "sub: " + sub_btnStatus_id);
     }
 
     @Override
     public void onDisconnect() {
         System.out.println("Disconnected");
+        Log.d(MTAG, "onDisconnect: Disconnected");
     }
 
     @Override
     public void onException(Exception e) {
         System.out.println("Exception");
+        Log.d(MTAG, "onDisconnect: Exception");
         if (e != null) {
             e.printStackTrace();
         }
@@ -171,20 +179,46 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
 
     @Override
     public void onDataAdded(String collectionName, String documentID, String newValuesJson) {
-        Log.d(TAG, "Data added to <" + collectionName + "> in document <" + documentID + ">");
-        Log.d(TAG, "    Added: " + newValuesJson);
+        Log.d(MTAG, "Data added to <" + collectionName + "> in document <" + documentID + ">");
+        Log.d(MTAG, "    Added: " + newValuesJson);
     }
 
     @Override
     public void onDataChanged(String collectionName, String documentID, String updatedValuesJson, String removedValuesJson) {
-        Log.d(TAG, "Data changed in <" + collectionName + "> in document <" + documentID + ">");
-        Log.d(TAG, "    Updated: " + updatedValuesJson);
-        Log.d(TAG, "    Removed: " + removedValuesJson);
+        Log.d(MTAG, "Data changed in <" + collectionName + "> in document <" + documentID + ">");
+        Log.d(MTAG, "    Updated: " + updatedValuesJson);
+        Log.d(MTAG, "    Removed: " + removedValuesJson);
+
+        /**
+         * 管理web下的按钮
+         */
+        if(collectionName.equals("btnStatus")) {
+            switch (documentID) {
+                case "xLHzabvj9Dm7JL7Wf":
+                    Log.d(TAG, "onDataChanged: 开始识别");
+                    initSpeechRecognizer();
+                    startVoiceRecognizer();
+                    break;
+                case "oqPKHFiYFmhd5raz4":
+                    Log.d(TAG, "onDataChanged: 暂停识别");
+                    speechRecognizer.destroy();
+                    break;
+                case "J5t4RMBwx2hRqKvXR" :
+                    Log.d(TAG, "onDataChanged: 开始说话");
+                    speak("");
+                    break;
+                case "ZnRB2NLqoA4ZkQBPQ":
+                    Log.d(TAG, "onDataChanged: 暂停说话");
+                    pause();
+                    break;
+            };
+
+        };
     }
 
     @Override
     public void onDataRemoved(String collectionName, String documentID) {
-        Log.d(TAG, "Data removed from <" + collectionName + "> in document <" + documentID + ">");
+        Log.d(MTAG, "Data removed from <" + collectionName + "> in document <" + documentID + ">");
     }
 
 
@@ -212,7 +246,7 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
 
     @Override
     public void onBufferReceived(byte[] buffer) {
-
+        //录音文本保存
     }
 
 
@@ -220,12 +254,25 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
     public void onEndOfSpeech() {
         myRecognitonStatus = enumRecognitionResult.STATUS_Recognition.value;
         System.out.println("检测到用户已经停止说话");
+        Log.d(TAG, "onEndOfSpeech: 检测到用户已经停止说话");
     }
 
     @Override
     public void onError(int error) {
         myRecognitonStatus = enumRecognitionResult.STATUS_None.value;
         StringBuilder sb = new StringBuilder();
+        // 根据报错类型重启语音识别服务
+        if(error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT || error == SpeechRecognizer.ERROR_NO_MATCH){
+            speak("不好意思，没有听清楚你说什么，请再说一遍。");
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "run: 新的识别");
+                    startVoiceRecognizer();
+                }
+            }, 4000);
+        }
+
         switch (error) {
             case SpeechRecognizer.ERROR_AUDIO:
                 sb.append("音频问题");
@@ -244,7 +291,6 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
                 break;
             case SpeechRecognizer.ERROR_NO_MATCH:
                 sb.append("没有匹配的识别结果");
-
                 break;
             case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
                 sb.append("引擎忙");
@@ -258,6 +304,7 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         }
         sb.append(":" + error);
         System.out.println("识别失败：" + sb.toString());
+        Log.d(TAG, "识别失败: " + sb.toString());
         myRecognitonStatus = enumRecognitionResult.STATUS_RecognitionFailed.value;
     }
 
@@ -295,9 +342,16 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        // 等待识别结果后再启动识别
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                Log.d(TAG, "run: 新的识别");
+                startVoiceRecognizer();
+            };
+        }, 2000);
 
-        editText.setText(nbest.get(0));
-        speak();
+//        editText.setText(nbest.get(0));
+        speak(nbest.get(0));
     }
 
     @Override
@@ -434,12 +488,12 @@ public class RobnameActivity extends AppCompatActivity implements MeteorCallback
         printEngineInfo();
     }
 
-    private void speak() {
-        String text = this.editText.getText().toString();
+    private void speak(String text) {
+        //text = this.editText.getText().toString();
         //需要合成的文本text的长度不能超过1024个GBK字节。
-        if (TextUtils.isEmpty(editText.getText())) {
-            text = "欢迎使用百度语音合成SDK,百度语音为你提供支持。";
-            editText.setText(text);
+        if (TextUtils.isEmpty(text)) {
+            text = "你好，请问有什么帮到你？";
+            mMeteor.call("listenStatus.updateSpeakStatus", new Object[]{"robotHi", 3, text, "机器人问候语"});
         }
         int result = this.speechSynthesizer.speak(text);
         if (result < 0) {
