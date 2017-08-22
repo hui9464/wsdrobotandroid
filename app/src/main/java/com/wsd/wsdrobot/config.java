@@ -5,7 +5,7 @@ package com.wsd.wsdrobot;
  */
 
 public class config {
-    private static String ip = "192.168.0.165:3000";
+    private static String ip = "192.168.0.154:3000";
     public final static String meteorSocketUrl = "ws://" + ip + "/websocket";
     public final static String webUrl = "http://" + ip + "/voiceListen";
 }

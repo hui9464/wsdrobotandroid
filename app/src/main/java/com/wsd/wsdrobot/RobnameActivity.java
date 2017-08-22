@@ -23,6 +23,7 @@ import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.SynthesizerTool;
 import com.baidu.tts.client.TtsMode;
+import com.wsd.wsdrobot.nlp.Nlp;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +41,7 @@ import im.delight.android.ddp.MeteorCallback;
 import im.delight.android.ddp.db.memory.InMemoryDatabase;
 
 
-public class RobnameActivity extends Activity implements MeteorCallback, RecognitionListener, SpeechSynthesizerListener {
+public class RobnameActivity extends Activity implements MeteorCallback, RecognitionListener, SpeechSynthesizerListener, View.OnClickListener {
 
     private static final String TAG = "pdh";
     private static final String MTAG = "meteor";
@@ -79,7 +80,7 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
         initWidgetListen();
         initialEnv();
         initialTts();
-        startVoiceRecognizer();
+
     }
 
     private void initMeteor() {
@@ -102,10 +103,10 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
 
     private void initWidgetListen() {
 
-//        editText = (EditText) findViewById(R.id.resText);
+        editText = (EditText) findViewById(R.id.resText);
 //
-//        findViewById(R.id.StartListenBtn).setOnClickListener(this);
-//        findViewById(R.id.speak).setOnClickListener(this);
+        findViewById(R.id.StartListenBtn).setOnClickListener(this);
+        findViewById(R.id.speak).setOnClickListener(this);
 
         webView = (WebView) findViewById(R.id.webView);
         //WebView加载web资源
@@ -124,21 +125,23 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
         settings.setJavaScriptEnabled(true);
     }
 
-//    @Override
-//    public void onClick(View v) {
-//        switch (v.getId()) {
-//            //开始收听
-//            case R.id.StartListenBtn:
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            //开始收听
+            case R.id.StartListenBtn:
 //                startVoiceRecognizer();
-//                break;
-//            //开始说话
-//            case R.id.speak:
-//                speak("");
-////                Collection c = mMeteor.getDatabase().getCollection("listenStatus");
-////                Log.d(TAG, "listenStatus集合: " + c);
-//                break;
-//        }
-//    }
+
+                editText.setText(new Nlp().result(editText.getText().toString()));
+                break;
+            //开始说话
+            case R.id.speak:
+                speak("");
+//                Collection c = mMeteor.getDatabase().getCollection("listenStatus");
+//                Log.d(TAG, "listenStatus集合: " + c);
+                break;
+        }
+    }
 
     @Override
     protected void onDestroy() {
