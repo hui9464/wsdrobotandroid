@@ -23,7 +23,8 @@ import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.SynthesizerTool;
 import com.baidu.tts.client.TtsMode;
-import com.wsd.wsdrobot.nlp.Nlp;
+import com.iflytek.aipsdk.nlp.INlpListener;
+import com.iflytek.aipsdk.nlp.NlpHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -131,8 +132,7 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
             //开始收听
             case R.id.StartListenBtn:
 //                startVoiceRecognizer();
-
-                editText.setText(new Nlp().result(editText.getText().toString()));
+                result(editText.getText().toString());
                 break;
             //开始说话
             case R.id.speak:
@@ -554,4 +554,38 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
     public void onError(String s, SpeechError speechError) {
 
     }
+
+    /**
+     * 语义
+     */
+    private NlpHelper nlpHelper;
+    private String params;
+    private int code;
+    private String nlpResult;
+
+    private void init() {
+        nlpHelper = new NlpHelper();
+        params = "svc=nlp,url=36.7.172.16:5105,appid=pc20onli,username=unicom,org=currencyservice";
+        params.trim();
+    }
+
+    public void result(String text) {
+        init();
+        if (null != nlpHelper) {
+            nlpHelper.getResult(params, text, iNlpListener);
+        }
+    }
+
+    INlpListener iNlpListener = new INlpListener() {
+        @Override
+        public void onResult(final String s, final int i) {
+            new Runnable() {
+                @Override
+                public void run() {
+                    editText.setText(s);
+                    code = i;
+                }
+            };
+        }
+    };
 }
