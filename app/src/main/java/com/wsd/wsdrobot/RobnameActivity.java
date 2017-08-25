@@ -23,7 +23,8 @@ import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.SynthesizerTool;
 import com.baidu.tts.client.TtsMode;
-import com.wsd.wsdrobot.nlp.Nlp;
+import com.iflytek.aipsdk.nlp.INlpListener;
+import com.iflytek.aipsdk.nlp.NlpHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,6 +70,9 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
     private EditText editText;
     private WebView webView;
 
+    private NlpHelper nlpHelper;
+    private String params;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +83,34 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
         initSpeechRecognizer();
         initWidgetListen();
         initialEnv();
-        initialTts();
+        //initialTts();
+        initNlp();
 
     }
+
+    private void initNlp() {
+        nlpHelper = new NlpHelper();
+        params = "svc=nlp,url=36.7.172.16:5105,appid=pc20onli,username=unicom,org=currencyservice";
+        params.trim();
+    }
+
+    public void nlpResult(String text) {
+        if (null != nlpHelper) {
+            nlpHelper.getResult(params, text, iNlpListener);
+        }
+    }
+
+    INlpListener iNlpListener = new INlpListener() {
+        @Override
+        public void onResult(final String s, final int i) {
+            new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "语义结果: " + s);
+                }
+            };
+        }
+    };
 
     private void initMeteor() {
         Meteor.setLoggingEnabled(true);
@@ -132,11 +161,11 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
             case R.id.StartListenBtn:
 //                startVoiceRecognizer();
 
-                editText.setText(new Nlp().result(editText.getText().toString()));
+                nlpResult(editText.getText().toString());
                 break;
             //开始说话
             case R.id.speak:
-                speak("");
+                //speak("");
 //                Collection c = mMeteor.getDatabase().getCollection("listenStatus");
 //                Log.d(TAG, "listenStatus集合: " + c);
                 break;
@@ -195,7 +224,7 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
         /**
          * 管理web下的按钮
          */
-        if(collectionName.equals("btnStatus")) {
+        if (collectionName.equals("btnStatus")) {
             switch (documentID) {
                 case "xLHzabvj9Dm7JL7Wf":
                     Log.d(TAG, "onDataChanged: 开始识别");
@@ -206,7 +235,7 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
                     Log.d(TAG, "onDataChanged: 暂停识别");
                     speechRecognizer.destroy();
                     break;
-                case "J5t4RMBwx2hRqKvXR" :
+                case "J5t4RMBwx2hRqKvXR":
                     Log.d(TAG, "onDataChanged: 开始说话");
                     speak("");
                     break;
@@ -214,9 +243,11 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
                     Log.d(TAG, "onDataChanged: 暂停说话");
                     pause();
                     break;
-            };
+            }
+            ;
 
-        };
+        }
+        ;
     }
 
     @Override
@@ -265,7 +296,7 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
         myRecognitonStatus = enumRecognitionResult.STATUS_None.value;
         StringBuilder sb = new StringBuilder();
         // 根据报错类型重启语音识别服务
-        if(error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT || error == SpeechRecognizer.ERROR_NO_MATCH){
+        if (error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT || error == SpeechRecognizer.ERROR_NO_MATCH) {
             speak("不好意思，没有听清楚你说什么，请再说一遍。");
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -350,11 +381,15 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
             public void run() {
                 Log.d(TAG, "run: 新的识别");
                 startVoiceRecognizer();
-            };
+            }
+
+            ;
         }, 2000);
 
 //        editText.setText(nbest.get(0));
         speak(nbest.get(0));
+        nlpResult(nbest.get(0));
+
     }
 
     @Override
@@ -482,9 +517,8 @@ public class RobnameActivity extends Activity implements MeteorCallback, Recogni
         // 初始化tts
         speechSynthesizer.initTts(TtsMode.MIX);
         // 加载离线英文资源（提供离线英文合成功能）
-        int result =
-                speechSynthesizer.loadEnglishModel(mSampleDirPath + "/" + ENGLISH_TEXT_MODEL_NAME, mSampleDirPath
-                        + "/" + ENGLISH_SPEECH_FEMALE_MODEL_NAME);
+        int result = speechSynthesizer.loadEnglishModel(mSampleDirPath + "/" + ENGLISH_TEXT_MODEL_NAME, mSampleDirPath
+                + "/" + ENGLISH_SPEECH_FEMALE_MODEL_NAME);
         Log.d(TAG, "loadEnglishModel result=" + result);
 
         //打印引擎信息和model基本信息
